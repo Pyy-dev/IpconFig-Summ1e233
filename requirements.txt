@@ -1,0 +1,9 @@
+requests
+re
+json
+sys
+getopt
+argparse
+BeautifulSoup4
+rich
+pyfiglet
