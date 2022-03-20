@@ -9,7 +9,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 from rich.console import Console
 from pyfiglet import Figlet
 console = Console() #输出带颜色的内容
-
+ret=""
 Cookies=json.load(open('config.json','r'))
 IP138_Cookie=Cookies["IP138_Cookie"]
 baidu_Cookie=Cookies["baidu_Cookie"]
@@ -45,14 +45,37 @@ header2={
     "Cookie": baidu_Cookie
     }
 def Address(url):
+    #该IP的归属地址
     url="https://site.ip138.com/"+url+"/"
     res=requests.get(url=url,headers=header,verify=False)
     bs_xml = BeautifulSoup(res.text, "html.parser")
     div =str(bs_xml.findAll('div',{'class':'result result2'}))
     ret_greed= re.findall(r'<h3>(.*)</h3>',div)
     return ret_greed[0]
+    
+def AddDomain(url):
+    #该域名的归属IP为
+    ret=""
+    url="https://site.ip138.com/"+url+"/"
+    res=requests.get(url=url,headers=header,verify=False)
+    bs_xml = BeautifulSoup(res.text, "html.parser")
+    div =str(bs_xml.findAll('div',{'id':'J_ip_history'}))
+    try:
+        ret_greed1= re.findall(r'<span class="date">(.*)</span>',div)
+        ret_greed2= re.findall(r'target="_blank">(.*)</a>',div)
+        seeis=len(ret_greed1)
+        for i in range(seeis):
+            ret=str(ret)+"\n         绑定时间-->"+ret_greed1[i]+"\n         绑定IP-->"+ret_greed2[i]+"\n         ---------------------------------------"
+        if(ret!=""):
+            return ret
+        else:
+            return "非常抱歉暂时没有找到该归属域名"
+    except:
+        return "非常抱歉暂时没有找到该归属域名"
+
 
 def Domain(url):
+    #该IP的归属域名
     ret=""
     url="https://site.ip138.com/"+url+"/"
     res=requests.get(url=url,headers=header,verify=False)
@@ -63,13 +86,17 @@ def Domain(url):
         for i in ret_greed:
             ret_greed1= re.findall(r'(.*)</span><a',i)
             ret_greed2= re.findall(r'target="_blank">(.*)',i)
-            ret=ret+"\n         绑定时间-->"+ret_greed1[0]+"\n         绑定域名-->"+ret_greed2[0]+"\n         ---------------------------------------"
-        return ret
+            ret=ret+"\n         绑定时间-->"+ret_greed1[0]+"\n         绑定域名-->"+ret_greed2[0]+FFRecord(ret_greed2[0])+"\n         ---------------------------------------"
+        if(ret!=""):
+            return ret
+        else:
+            return "非常抱歉暂时没有找到该归属域名"
     except:
-        a=a
+        return "非常抱歉暂时没有找到该归属域名"
 
 
 def subdomain(url):
+    #该域名的归属子域名
     ret=""
     url="https://site.ip138.com/"+url+"/domain.htm"
     res=requests.get(url=url,headers=header,verify=False)
@@ -81,11 +108,15 @@ def subdomain(url):
         for i in ret_greed:
             if(i!="更多子域名"):
                 ret=ret+"\n         子域名地址-->"+i+"\n         ---------------------------------------"
-        return ret
+        if(ret!=""):
+            return ret
+        else:
+            return "非常抱歉暂时没有找到该归属子域名"
     except:
-        a=a
+        return "非常抱歉暂时没有找到该归属子域名"
 
 def FFRecord(url):
+    #该域名的归属公司为
     ret=""
     url="https://site.ip138.com/"+url+"/beian.htm"
     res=requests.get(url=url,headers=header,verify=False)
@@ -94,9 +125,9 @@ def FFRecord(url):
     #print(div)
     try:
         ret_greed= re.findall(r'rel="nofollow" target="_blank">(.*)</a>\n</p>',div)
-        return Company(Record(ret_greed[0]))
+        return "\n         备案号为-->"+ret_greed[0]+Company(Record(ret_greed[0]))
     except:
-        a=a
+        return "非常抱歉暂时没有找到该归属公司"
 
 
 def Record(url):
@@ -110,7 +141,7 @@ def Record(url):
         ret_greed= re.findall(r'target="_blank">(.*)</a></span></td>',div)
         return ret_greed[0]
     except:
-        a=a
+         return "非常抱歉暂时没有找到该归属备案号"
         
 def Company(url):
     ret=""
@@ -124,22 +155,22 @@ def Company(url):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"hu:d",["ifile=","ofile="])
+        getopt.getopt(argv,"hu:d",["url=","domain="])
     except getopt.GetoptError:
         console.print("查询IP归属与归属地址-->IpconFig.py -u 127.0.0.1", style='bold green')
         console.print("查询域名及公司归属地-->IpconFig.py -d www.baidu.com", style='bold green')
         sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            console.print("查询IP归属与归属地址-->IpconFig.py -u 127.0.0.1", style='bold green')
-            console.print("查询域名及公司归属地-->IpconFig.py -d www.baidu.com", style='bold green')
-            sys.exit()
-        elif opt in ("-u", "--url"):
-            console.print("该IP的归属地址："+Address(arg), style='bold green')
-            console.print("该IP的归属域名："+Domain(arg), style='bold green')
-        elif opt in ("-d", "--domain"):
-            console.print("该IP的归属子域名："+subdomain(args[0]), style='bold green')
-            console.print("该IP的归属公司为："+FFRecord(args[0]), style='bold green')
+    if(argv[0]=="-d"):
+        console.print("该域名的归属IP为："+AddDomain(argv[1]), style='bold green')
+        console.print("该域名的归属子域名："+subdomain(argv[1]), style='bold green')
+        console.print("该域名的归属公司为："+FFRecord(argv[1]), style='bold green')
+    elif(argv[0]=="-u"):
+        console.print("该IP的归属地址："+Address(argv[1]), style='bold green')
+        console.print("该IP的归属域名："+Domain(argv[1]), style='bold green')  
+    elif(argv[0]=="-h"): 
+        console.print("查询IP归属与归属地址-->IpconFig.py -u 127.0.0.1", style='bold green')
+        console.print("查询域名及公司归属地-->IpconFig.py -d www.baidu.com", style='bold green')
+
 
 
 if __name__=="__main__":
@@ -147,4 +178,8 @@ if __name__=="__main__":
     console.print('         Author: Summ1e233 - V2.0    \n', style='bold blue')
     console.print('           输入-h查看说明    \n', style='bold blue')
     console.print('---------------------------------------------------\n', style='bold blue')
-    main(sys.argv[1:])
+    try:
+        main(sys.argv[1:])
+    except:
+        console.print("查询IP归属与归属地址-->IpconFig.py -u 127.0.0.1", style='bold green')
+        console.print("查询域名及公司归属地-->IpconFig.py -d www.baidu.com", style='bold green')
