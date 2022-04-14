@@ -1,9 +1,2 @@
-requests
-re
-json
-sys
-getopt
-argparse
-BeautifulSoup4
-rich
-pyfiglet
+rich==10.14.0
+pyfiglet==0.8.post1

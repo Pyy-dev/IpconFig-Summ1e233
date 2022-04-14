@@ -34,7 +34,7 @@
 
 ## 安装
 
-这里未来方便同学们我将需要的包都打包在-->requirements.txt
+这里为了方便同学们我将需要的包都打包在-->requirements.txt
 
 ```python
 pip3 install -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple/

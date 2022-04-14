@@ -2,7 +2,6 @@
 from cProfile import run
 from email import header
 import requests,re,json,sys, getopt
-import argparse
 from bs4 import BeautifulSoup
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
